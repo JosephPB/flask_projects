@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1> Sign In</h1>
+    <!-- The form element is used as a contained for the webform
+	 action attribute tells browser the URL used when submitting information entered by user
+	 method specifies the HTTP reqyest method used when submitting form to server
+	 default method is GET but is almost all cases POST makes for a better user experience becuase requirests add the form fields to the URL, cluttering the browser address bar
+	 novalidate attribute tells web browser not to apply validation to fields in this form, leaving this task to the Flask application running the server
+	 form.hidden_tag() generated hidden field that includes a token use to protect the user from CSRF attacks
+	 theoretically you need this field and have a SECRET_KEY defined in the Flask configuration to protect the form
+    -->
+    <form action = "" method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <p>
+	{{ form.username.label }}<br>
+	{{ form.username(size=32) }}
+	{% for error in form.username.errors %}
+	<span style="color: red;">[{{ error }}]</span>
+	{% endfor %}
+      </p>
+      <p>
+	{{ form.password.label }}<br>
+	{{ form.password(size=32) }}
+	{% for error in form.password.errors %}
+	<span style="color: red;">[{{ error }}]</span>
+	{% endfor %}
+      </p>
+      <p>{{ form.remember_me() }}{{ form.remember_me.label }}</p>
+      <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

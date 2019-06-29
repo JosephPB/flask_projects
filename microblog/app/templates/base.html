@@ -7,8 +7,20 @@
     {% endif %}
   </head>
   <body>
-    <div>Microblog: <a href="/index">Home</a></div>
-    <hr>
-    {% block content %}{% endblock %}
-  </body>
+    <div>Microblog: 
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('login') }}">Login</a>
+    </div>
+    <hr> <!-- a thematic break -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul> <!-- tag is an unordered list -->
+      {% for message in messages %}
+      <li>{{ message }}<li> <!-- these are elements in the list -->
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %} 
+ </body>
 </html>
