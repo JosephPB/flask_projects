@@ -1,7 +1,18 @@
+from app import login
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from app import db
+# import UserMixin class from Flask-Login which includes generic implementations for the four required items needed by Flask-Login and are appropriate for most standard database modes
+from flask_login import UserMixin
 
-class User(db.Model):
+# Flask-Login needs application's help in loading a user. Extension expects application to configure a user loader function, that can be called to load a user given the ID
+# The user loader is registered with Flask-Login with a decorator
+@login.user_loader
+def load_user(id):
+    'The ID passed to the function is going to be a string and so it needs to be converted to an int'
+    return User.query.get(int(id))
+
+class User(UserMixin, db.Model):
     '''
     The class inherits from db.Model, which is a base class for all models from Flask-SQLAlchemy. It defines several fields as class variables. Fields are created as instances of the db.Column class, which takes the field type as an argument, plus other optional arguments that, for examples, allowthe indication of which fields are uniques and indexed, which is important so that database searches are effieicnt
     '''
@@ -18,6 +29,12 @@ class User(db.Model):
     def __repr__(self):
         'Tells Python how to print objects of this class) - useful for debugging'
         return '<User {}>'.format(self.username)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
