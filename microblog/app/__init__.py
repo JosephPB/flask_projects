@@ -10,6 +10,8 @@ app.config.from_object(Config)
 db = SQLAlchemy(app) # database
 migrate = Migrate(app, db) # migration engine
 login = LoginManager(app)
+# to be able to give certain pages that he user must login to see, Flask-Login needs to know what the view function is that handles logins - pass the login page to login.login_view
+login.login_view = 'login'
 
 # routes module is imported below as it imports from the app variable assigned above
 from app import routes, models

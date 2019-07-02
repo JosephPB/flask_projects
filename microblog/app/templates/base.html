@@ -7,9 +7,14 @@
     {% endif %}
   </head>
   <body>
-    <div>Microblog: 
+    <div>Microblog:
+      <!-- always show Home page in menu, show login if analymous and logout if logged in-->
       <a href="{{ url_for('index') }}">Home</a>
+      {% if current_user.is_anonymous %}
       <a href="{{ url_for('login') }}">Login</a>
+      {% else %}
+      <a href="{{ url_for('logout') }}">Logout</a>
+      {% endif %}
     </div>
     <hr> <!-- a thematic break -->
     {% with messages = get_flashed_messages() %}
