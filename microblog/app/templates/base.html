@@ -13,6 +13,8 @@
       {% if current_user.is_anonymous %}
       <a href="{{ url_for('login') }}">Login</a>
       {% else %}
+      <!-- since we are using a dynamic route, pass url_for the value of the argument -->
+      <a href="{{ url_for('user', username=current_user.username) }}">Profile</a>
       <a href="{{ url_for('logout') }}">Logout</a>
       {% endif %}
     </div>

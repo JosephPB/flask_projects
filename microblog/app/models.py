@@ -1,3 +1,4 @@
+from hashlib import md5
 from app import login
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -35,6 +36,12 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def avatar(self, size):
+        'Pulls in an avatar, if registered on Gravatar, or, alternatively, generates an identicon'
+        # input is an MD5 hash which is generated from lowering the email address, converting it to bytes and then passing it into the hash function
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(digest, size)
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
