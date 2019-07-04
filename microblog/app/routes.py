@@ -1,7 +1,8 @@
+from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User
 
@@ -95,3 +96,29 @@ def user(username):
     ]
     return render_template('user.html', user=user, posts=posts)
 
+# before_request decorator regusters view funcytion to be used before any view function in an application
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.utcnow()
+        # no ned to have db/session.add() before commit as referencing current_user, Flask-Login will invoke the user loader callback function, which wil run a database query that will put the target user in the database session, so you can add the user again in this function, but it is not necessary becuase it is already there
+        db.session.commit()
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    # validate_on_submit might return False if browser just sent a GET request, which needs to be responded to be providing an initial version of the form template, or it can be when the browser sends a POST request with form data, but something in that data is invalid
+    if form.validate_on_submit():
+        current_user.username = form.username.data
+        current_user.about_me = form.about_me.data
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('edit_profile'))
+    # if form is being requested with a GET requiest, wan to pre-populate the fields with the data that is stored in the databse
+    # by checking request.method, it will be GET for the initial request, and POST for a submission and therefore will separate some errors
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.about_me.data = current_user.about_me
+    return render_template('edit_profile.html', title='Edit Profile',
+                           form=form)

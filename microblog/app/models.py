@@ -27,6 +27,9 @@ class User(UserMixin, db.Model):
     # backref argument defines the name of a field that will be added to the objects of the "many" class that points back to the "one" object (in a "many-to-one" relationship
     posts = db.relationship('Post', backref='author', lazy='dynamic')
 
+    about_me = db.Column(db.String(140))
+    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+
     def __repr__(self):
         'Tells Python how to print objects of this class) - useful for debugging'
         return '<User {}>'.format(self.username)
