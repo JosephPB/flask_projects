@@ -14,3 +14,12 @@ class Config(object):
         'sqlite:///' + os.path.join(basedir, 'app.db')
     # set to False the feature which signals the application every time a change is about to be made in the database which is not needed
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # for error handling - want to be notified by email
+    # if email setting are not given int he environment then assume that email error handling should be disabled
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    ADMINS = ['your-email@example.com']

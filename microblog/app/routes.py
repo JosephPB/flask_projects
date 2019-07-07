@@ -107,7 +107,8 @@ def before_request():
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    form = EditProfileForm()
+    # pass current_user.username to form as this will be used to check if username change is actually a change or the same before raising duplication error
+    form = EditProfileForm(current_user.username)
     # validate_on_submit might return False if browser just sent a GET request, which needs to be responded to be providing an initial version of the form template, or it can be when the browser sends a POST request with form data, but something in that data is invalid
     if form.validate_on_submit():
         current_user.username = form.username.data

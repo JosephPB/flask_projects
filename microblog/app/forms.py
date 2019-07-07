@@ -36,3 +36,14 @@ class EditProfileForm(FlaskForm):
     about_me = TextAreaField('About me', validators=[Length(min=0, max=140)])
     submit = SubmitField('Submit')
 
+    def __init__(self, original_username, *args, **kwargs):
+        super(EditProfileForm, self).__init__(*args, **kwargs)
+        self.original_username = original_username
+    
+    def validate_username(self, username):
+        # check if username entered is the same as before, if duplicate and not the same then raise error
+        # note this way of error checking might not be a completel solution, partly because the it may not work when two or more processes are accessing the database at the same time. In that situation, a race condition could cause the validation to pass, but a moment later when the rename is attembpted the database was already changed by another process and cannot rename the user
+        if username.data != self.original_username:
+            user = User.query.filter_by(username=self.username.data).first()
+            if user is not None:
+                raise ValidationError('Please use a different username.')
