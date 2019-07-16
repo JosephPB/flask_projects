@@ -26,10 +26,18 @@ def index():
         # refershes can ask the user if they wish to resibmit the form if a post request with a form submission returns a regular response
         # if using a redirect, the browser is then instructed to send a get request once the form is submitted to grab the page indicated in the redirect, now the last request is not a post and the refresh command works in a more predictable way
         return redirect(url_for('index'))
-    posts = current_user.followed_posts().all()
+    page = request.args.get('page', 1, type=int)
+    # using pagination Flask-SQLAlchemy will execute the pagiation class which will limit the number of pages displayed
+    # in the thrid flag, if passed True, when an out of range page is requests a 404 error will be returned to the client, if False then an empty list will be returned for out of range pages
+    posts = current_user.followed_posts().paginate(
+        page, app.config['POSTS_PER_PAGE'], False)
+    # pagination has attributes to find the number of the next and previous pages of results (next_num and prev_num respectively) and the existance of previous and next pages can be checked using has_next and has_prev respectively
+    # note: when using the url_for function, can add any keyword arguments to it and if the names of those arguments are note references in the URL directly, then Flask will include them in the URL query arguments
+    next_url = url_for('index', page=posts.next_num) if posts.has_next else None
+    prev_url = url_for('index', page=posts.prev_num) if posts.has_prev else None
     # using the render_template functino that comes with Jinja2 in Flask
     # note the template file must be in the ./template directory which is not passed here
-    return render_template('index.html', title='Home', posts=posts, form=form)
+    return render_template('index.html', title='Home', posts=posts.items, form=form, next_url=next_url, prev_url=prev_url)
 
 # add methods attribute to highlight how function now accepts GET and POST requirests
 # GET requests return information to the client
@@ -90,11 +98,15 @@ def register():
 def user(username):
     # useing first_or_404 saves having to check if the query returned a usere in order to find ot if the user exists as if returns None then show 404
     user = User.query.filter_by(username=username).first_or_404()
-    posts = [
-        {'author': user, 'body': 'Test post #1'},
-        {'author': user, 'body': 'Test post #2'}
-    ]
-    return render_template('user.html', user=user, posts=posts)
+    page = request.args.get('page', 1, type=int)
+    posts = user.posts.order_by(Post.timestame.desc()).paginate(
+        page, app.config['POSTS_PER_PAGE'], False)
+    next_url = url_for('user', username=user.username, page=posts.next_num) \
+        if posts.has_next else None
+    prev_url = url_for('user', username=user.username, page=posts.prev_num) \
+        if posts.has_prev else None
+    return render_template('user.html', user=user, posts=posts.items,
+                           next_url=next_url, prev_url=prev_url)
 
 # before_request decorator regusters view funcytion to be used before any view function in an application
 @app.before_request
@@ -156,8 +168,17 @@ def unfollow(username):
     return redirect(url_for('user', username=username))
 
 @app.route('/explore')
-@login_request
+@login_required
 def explore():
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    # using request.args.get gets the value of the argument in the URL, e.g. .../index?page=1, if no page given then default to 1
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.timestame.desc()).paginate(
+        page, app.config['POSTS_PER_PAGE'], False)
+    next_url = url_for('explore', page=posts.next_num) \
+        if posts.has_next else None
+    prev_url = url_for('explore', page=posts.prev_num) \
+        if posts.has_prev else None
     # since this page will look a lot like the index page, use the index page as a template to render, but do not want the blog post form and so do not pass this argument
-    return return_template('index.html', title='Explore', posts=posts)
+    return render_template("index.html", title='Explore', posts=posts.items,
+                          next_url=next_url, prev_url=prev_url)
+
