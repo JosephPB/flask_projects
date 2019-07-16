@@ -2,34 +2,34 @@ from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, EditProfileForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User
+from app.models import User, Post
 
 # decorators modify function that follows it
 # here the decorators create an association between the URL and the function
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 # in order to require login to view page, use login_required decorator
 # redirects to the location assigned in app/__init__.py to the login.login_required function
 # in the case of navigating to /index, this makes the complete URL: /login?next=/index, where next indicated where to go after login
 @login_required
 def index():
-    user = {'username': 'Miguel'}
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Averngers movie was so cool!'
-        }
-    ]
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post is now live!')
+        # but in redirect as otherwise have to deal with how browsers handle refreshes
+        # refershes can ask the user if they wish to resibmit the form if a post request with a form submission returns a regular response
+        # if using a redirect, the browser is then instructed to send a get request once the form is submitted to grab the page indicated in the redirect, now the last request is not a post and the refresh command works in a more predictable way
+        return redirect(url_for('index'))
+    posts = current_user.followed_posts().all()
     # using the render_template functino that comes with Jinja2 in Flask
     # note the template file must be in the ./template directory which is not passed here
-    return render_template('index.html', title='Home', posts=posts)
+    return render_template('index.html', title='Home', posts=posts, form=form)
 
 # add methods attribute to highlight how function now accepts GET and POST requirests
 # GET requests return information to the client
@@ -154,3 +154,10 @@ def unfollow(username):
     db.session.commit()
     flash('You are not following {}.'.format(username))
     return redirect(url_for('user', username=username))
+
+@app.route('/explore')
+@login_request
+def explore():
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    # since this page will look a lot like the index page, use the index page as a template to render, but do not want the blog post form and so do not pass this argument
+    return return_template('index.html', title='Explore', posts=posts)

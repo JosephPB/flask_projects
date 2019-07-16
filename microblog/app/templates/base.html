@@ -16,6 +16,7 @@
       <!-- since we are using a dynamic route, pass url_for the value of the argument -->
       <a href="{{ url_for('user', username=current_user.username) }}">Profile</a>
       <a href="{{ url_for('logout') }}">Logout</a>
+      <a href="{{ url_for('explore') }}">Explore</a>
       {% endif %}
     </div>
     <hr> <!-- a thematic break -->
