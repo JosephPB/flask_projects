@@ -5,6 +5,9 @@ from datetime import datetime
 from app import db
 # import UserMixin class from Flask-Login which includes generic implementations for the four required items needed by Flask-Login and are appropriate for most standard database modes
 from flask_login import UserMixin
+import time
+import jwt
+from app import app
 
 # Flask-Login needs application's help in loading a user. Extension expects application to configure a user loader function, that can be called to load a user given the ID
 # The user loader is registered with Flask-Login with a decorator
@@ -90,6 +93,21 @@ class User(UserMixin, db.Model):
         # also retieve all of self posts for display
         own = Post.query.filter_by(user_id=self.id)
         return followed.union(own).order_by(Post.timestame.desc())
+    
+    def get_reset_password_token(self, expires_in=600):
+        return jwt.encode(
+            {'reset_password': self.id, 'exp': time() + expires_in},
+            app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8') # decoding necessary since wkt returns token as a byte sequence
+
+    # a static method means that the function can e invoked directly from the class
+    @staticmethod
+    def verify_reset_password_token(token):
+        try:
+            id=jwt.decode(token, app.config['SECRET_KEY'],
+                          algorithms=['HS256'])['reset_password']
+        except:
+            return
+        return User.query.get(id)
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
