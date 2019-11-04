@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
-{% block content %}
+{% block app_content %}
     <h1> Sign In</h1>
     <!-- The form element is used as a contained for the webform
 	 action attribute tells browser the URL used when submitting information entered by user
@@ -10,7 +11,7 @@
 	 form.hidden_tag() generated hidden field that includes a token use to protect the user from CSRF attacks
 	 theoretically you need this field and have a SECRET_KEY defined in the Flask configuration to protect the form
     -->
-    <form action = "" method="post" novalidate>
+<!--    <form action = "" method="post" novalidate>
       {{ form.hidden_tag() }}
       <p>
 	{{ form.username.label }}<br>
@@ -28,7 +29,15 @@
       </p>
       <p>{{ form.remember_me() }}{{ form.remember_me.label }}</p>
       <p>{{ form.submit() }}</p>
-    </form>
+    </form> -->
+
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+    <br>
+
     <p>
         Forgot Your Password?
         <a href="{{ url_for('reset_password_request') }}">Click to Reset It</a>
