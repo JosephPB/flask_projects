@@ -112,7 +112,7 @@ class User(UserMixin, db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
-    timestame = db.Column(db.Integer, index=True, default=datetime.utcnow)
+    timestame = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     # note is it good to work with utc time as then they are alway the same for the user and will be formatted into local time whereever the user is
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 

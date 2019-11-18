@@ -8,6 +8,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap
+from flask_moment import Moment
 
 # name variable is a Python prededined variable set to the name of the module in which it is used
 app = Flask(__name__)
@@ -21,6 +22,7 @@ mail = Mail(app)
 # bootstrap is the flask_bootstap extension that gives a ready to use base template
 # flask is also fully compatible with CSS classes and bootstrap.min.js etc.
 bootstap = Bootstrap(app)
+moment = Moment(app)
 
 # routes module is imported below as it imports from the app variable assigned above
 from app import routes, models, errors
